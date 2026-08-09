@@ -1,0 +1,10 @@
+import { NextRequest, NextResponse } from "next/server";
+import { authorized } from "@/lib/inventory";
+import { readStorefront, writeStorefront } from "@/lib/storefront";
+import { categories } from "@/app/catalog";
+export const runtime = "nodejs";
+const slugify=(value:string)=>value.toLowerCase().trim().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"");
+const owner=(request:NextRequest)=>authorized(request.cookies.get("fr_owner")?.value);
+export async function GET(){return NextResponse.json(await readStorefront(),{headers:{"Cache-Control":"no-store"}})}
+export async function PATCH(request:NextRequest){if(!owner(request))return NextResponse.json({error:"Owner login required."},{status:401});const {key,price}=await request.json().catch(()=>({}));if(typeof key!=="string"||typeof price!=="number"||!Number.isFinite(price)||price<0)return NextResponse.json({error:"Invalid price."},{status:400});const store=await readStorefront();store.prices[key]=Math.round(price*100)/100;await writeStorefront(store);return NextResponse.json(store)}
+export async function POST(request:NextRequest){if(!owner(request))return NextResponse.json({error:"Owner login required."},{status:401});const {category,name,description,price}=await request.json().catch(()=>({}));if(typeof category!=="string"||!categories.some(c=>c.slug===category)||typeof name!=="string"||!name.trim()||typeof description!=="string"||typeof price!=="number"||!Number.isFinite(price)||price<0)return NextResponse.json({error:"Complete every product field."},{status:400});const store=await readStorefront();let slug=slugify(name);if(!slug)return NextResponse.json({error:"Use a valid product name."},{status:400});const used=new Set([...categories.flatMap(c=>c.products.map(p=>p.slug)),...store.customProducts.map(p=>p.slug)]);let suffix=2;const base=slug;while(used.has(slug))slug=`${base}-${suffix++}`;store.customProducts.push({category,slug,name:name.trim(),description:description.trim(),options:[{label:"One-time purchase",price:Math.round(price*100)/100,note:"Instant delivery"}]});await writeStorefront(store);return NextResponse.json(store,{status:201})}
