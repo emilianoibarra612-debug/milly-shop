@@ -1,14 +1,4 @@
 import { notFound } from "next/navigation";
 import { getCategory } from "../catalog";
 import CategoryClient from "./view";
-
-export default async function CategoryPage({
-  params,
-}: {
-  params: Promise<{ category: string }>;
-}) {
-  const { category: categorySlug } = await params;
-  const category = getCategory(categorySlug);
-  if (!category) notFound();
-  return <CategoryClient category={category} />;
-}
+export default function CategoryPage({params}:{params:{category:string}}){const category=getCategory(params.category);if(!category)notFound();return <CategoryClient category={category}/>}
