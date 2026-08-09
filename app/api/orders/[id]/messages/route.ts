@@ -1,0 +1,5 @@
+import { NextRequest, NextResponse } from "next/server";
+import { addMessage, customerOrder, messagesFor, orderCookie } from "@/lib/orders";
+export const dynamic="force-dynamic";
+export async function GET(request:NextRequest,{params}:{params:Promise<{id:string}>}){const {id}=await params;if(!await customerOrder(id,request.cookies.get(orderCookie(id))?.value))return NextResponse.json({error:"Access denied."},{status:403});return NextResponse.json({messages:await messagesFor(id)})}
+export async function POST(request:NextRequest,{params}:{params:Promise<{id:string}>}){const {id}=await params;if(!await customerOrder(id,request.cookies.get(orderCookie(id))?.value))return NextResponse.json({error:"Access denied."},{status:403});try{const {body}=await request.json();await addMessage(id,"customer",String(body||""));return NextResponse.json({messages:await messagesFor(id)})}catch(error){return NextResponse.json({error:error instanceof Error?error.message:"Could not send message."},{status:400})}}
