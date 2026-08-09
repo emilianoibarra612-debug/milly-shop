@@ -1,0 +1,4 @@
+import { NextRequest, NextResponse } from "next/server";
+import { createOrder, orderCookie, priceItems } from "@/lib/orders";
+export const dynamic="force-dynamic";
+export async function POST(request:NextRequest){try{const body=await request.json();const email=String(body.email||"").trim();if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||email.length>254)return NextResponse.json({error:"Enter a valid email address."},{status:400});const items=await priceItems(body.items);const {order,token}=await createOrder(email,items);const response=NextResponse.json({order});response.cookies.set(orderCookie(order.id),token,{httpOnly:true,secure:true,sameSite:"strict",path:"/",maxAge:60*60*24*90});return response}catch(error){return NextResponse.json({error:error instanceof Error?error.message:"Could not create order."},{status:400})}}
