@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./styles.css";
+import "./product-art.css";
 import "./owner.css";
 import "./cart.css";
 import "./owner-editor.css";
