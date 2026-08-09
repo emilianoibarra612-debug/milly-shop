@@ -1,3 +1,4 @@
+// Product catalog with branded artwork enabled.
 export type Product = { slug: string; name: string; description: string; options: { label: string; price: number; note?: string }[] };
 export type Category = { slug: string; nav: string; title: string; kicker: string; summary: string; icon: string; products: Product[] };
 export const categories: Category[] = [
