@@ -1,4 +1,5 @@
 {
+  // ForeverRepent production Worker and private order storage.
   "$schema": "node_modules/wrangler/config-schema.json",
   "main": ".open-next/worker.js",
   "name": "milly-shop",
