@@ -1,0 +1,15 @@
+"use client";
+import Link from "next/link";
+import { categories } from "./catalog";
+import { CartButton } from "./cart";
+
+export default function Home() {
+  return <main className="home">
+    <nav className="nav"><Link href="/" className="wordmark"><span>FR</span> FOREVERREPENT</Link><div className="navlinks">{categories.map(c=><Link key={c.slug} href={`/${c.slug}`}>{c.nav}</Link>)}</div><div className="nav-actions"><Link className="owner-link" href="/owner">Owner login</Link><CartButton/><a className="nav-discord" href="https://discord.gg/uynfPSkK8B" target="_blank">Join the server <b>↗</b></a></div></nav>
+    <section className="clean-hero"><div className="hero-copy"><p className="eyebrow">FOREVERREPENT.STORE / DIGITAL MARKETPLACE</p><h1>Find your<br/><em>circle.</em></h1><p className="lede">A curated marketplace for digital essentials. Browse trusted sellers, get what you need, and stay connected with the community.</p><div className="hero-actions"><a className="button primary" href="https://discord.gg/uynfPSkK8B" target="_blank">Join the server <i>↗</i></a><a className="button quiet" href="https://discord.com/users/662101534808473600" target="_blank">Private inquiries · foreverrepent.</a></div><p className="subnote">Need something specific? Contact <a href="https://discord.com/users/662101534808473600" target="_blank">foreverrepent.</a> directly.</p></div><div className="hero-symbol"><div className="symbol-ring"/><div className="symbol-core"><span>FR</span><small>FOREVER<br/>REPENT</small></div><p>MARKETPLACE · COMMUNITY · SUPPORT</p></div></section>
+    <section className="welcome"><p className="eyebrow">THE FOREVERREPENT NETWORK</p><h2>Everything in one <em>place.</em></h2><p>Shop the marketplace or step into the server to discover sellers, request private listings, and connect with the hub.</p><a href="https://discord.gg/uynfPSkK8B" target="_blank">Enter the Discord server <span>→</span></a></section>
+    <section className="category-grid">{categories.map((c,i)=><Link href={`/${c.slug}`} className="home-category" key={c.slug}><span className="number">0{i+1}</span><div className="category-icon">{c.icon}</div><p className="eyebrow">{c.kicker}</p><h3>{c.title}</h3><p>{c.summary}</p><b>Explore <i>↗</i></b></Link>)}</section>
+    <section className="support-band"><div><p className="eyebrow">PRIVATE REQUESTS</p><h2>Can&apos;t find it?<br/><em>Ask directly.</em></h2></div><div><p>For private inquiries, custom requests, or help with an order, message <strong>foreverrepent.</strong> on Discord.</p><a className="button primary" href="https://discord.com/users/662101534808473600" target="_blank">Contact foreverrepent. <i>↗</i></a></div></section>
+    <footer><div className="footer-brand"><span>FR</span><h2>FOREVER<br/>REPENT<em>.STORE</em></h2></div><div><p>THE COMMUNITY MARKETPLACE</p><a href="https://discord.gg/uynfPSkK8B" target="_blank">Join the server ↗</a></div><small>© 2026 FOREVERREPENT.STORE · ALL RIGHTS RESERVED</small></footer>
+  </main>;
+}
