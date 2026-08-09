@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "pnpm install --force --frozen-lockfile && next build",
     "start": "next start",
     "lint": "next lint"
   },
