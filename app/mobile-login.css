@@ -1,0 +1,11 @@
+@media (max-width: 760px) {
+  .nav-actions .owner-link {
+    display: inline;
+    font-size: 8px;
+    white-space: nowrap;
+  }
+
+  .nav-actions .nav-discord {
+    display: none;
+  }
+}

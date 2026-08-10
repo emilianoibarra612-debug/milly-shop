@@ -5,6 +5,7 @@ import "./order.css";
 import "./owner.css";
 import "./cart.css";
 import "./owner-editor.css";
+import "./mobile-login.css";
 import { CartProvider } from "./cart";
 
 export const metadata: Metadata = { title: "FOREVERREPENT.STORE", description: "Premium digital essentials." };
