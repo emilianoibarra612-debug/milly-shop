@@ -89,3 +89,4 @@ export async function allOrders() {
   );
 }
 export async function setOrderStatus(id:string,status:string){if(!["pending","paid","completed","cancelled","closed"].includes(status))throw new Error("Invalid order status.");const db=await getDb();await db.prepare("UPDATE orders SET status=?,updated_at=? WHERE id=?").bind(status,new Date().toISOString(),id).run()}
+export async function deleteOrder(id:string){const db=await getDb();await db.batch([db.prepare("DELETE FROM messages WHERE order_id=?").bind(id),db.prepare("DELETE FROM orders WHERE id=?").bind(id)])}
