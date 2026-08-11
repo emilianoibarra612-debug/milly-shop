@@ -10,7 +10,7 @@ import "./features.css";
 import "./dashboard.css";
 import "./two-factor.css";
 import "./activity-images.css";
-// Reviews, promotions, analytics, and self-service owner 2FA release.
+// Reviews, promotions, analytics, owner activity, custom images, and 2FA release.
 import { CartProvider } from "./cart";
 
 export const metadata: Metadata = { title: "FOREVERREPENT.STORE", description: "Premium digital essentials." };
