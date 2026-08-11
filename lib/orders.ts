@@ -98,11 +98,8 @@ export async function addVouch(id:string){const db=await getDb();const order=awa
 export async function addWarrantyClaim(id:string,body:string){const clean=body.trim().slice(0,1000);if(clean.length<10)throw new Error("Describe the issue in at least 10 characters.");const db=await getDb();const order=await db.prepare("SELECT status,updated_at FROM orders WHERE id=?").bind(id).first<{status:string;updated_at:string}>();if(order?.status!=="completed")throw new Error("Only completed orders can open warranty claims.");const events=await orderEvents(id);if(!events.vouch)throw new Error("A vouch is required for warranty coverage.");if(Date.now()-new Date(order.updated_at).getTime()>30*24*60*60*1000)throw new Error("The one-month warranty period has ended.");await db.prepare("INSERT INTO order_events (order_id,type,body,created_at) VALUES (?,'warranty',?,?)").bind(id,clean,new Date().toISOString()).run();await addMessage(id,"customer",`WARRANTY CLAIM: ${clean}`)}
 export async function recentSales(){
  const db=await getDb();
- const {results}=await db.prepare("SELECT items_json,updated_at FROM orders WHERE status='completed' ORDER BY updated_at DESC LIMIT 50").all<Record<string,unknown>>();
- const sales=results.map(row=>({product:(JSON.parse(String(row.items_json)) as OrderItem[])[0]?.name||"Digital product",completedAt:String(row.updated_at)}));
- const youtube=sales.find(sale=>sale.product.toLowerCase().includes("youtube"));
- const latest=sales.filter(sale=>sale!==youtube).slice(0,youtube?5:6);
- return youtube?[youtube,...latest].sort((a,b)=>Date.parse(b.completedAt)-Date.parse(a.completedAt)):latest;
+ const {results}=await db.prepare("SELECT items_json,updated_at FROM orders WHERE status='completed' ORDER BY updated_at DESC LIMIT 6").all<Record<string,unknown>>();
+ return results.map(row=>({product:(JSON.parse(String(row.items_json)) as OrderItem[])[0]?.name||"Digital product",completedAt:String(row.updated_at)}));
 }
 export async function setOrderStatus(id:string,status:string){if(!["pending","paid","completed","cancelled","closed"].includes(status))throw new Error("Invalid order status.");const db=await getDb();await db.prepare("UPDATE orders SET status=?,updated_at=? WHERE id=?").bind(status,new Date().toISOString(),id).run()}
 export async function deleteOrder(id:string){const db=await getDb();await db.batch([db.prepare("DELETE FROM order_events WHERE order_id=?").bind(id),db.prepare("DELETE FROM messages WHERE order_id=?").bind(id),db.prepare("DELETE FROM orders WHERE id=?").bind(id)])}
