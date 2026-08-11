@@ -17,8 +17,8 @@ async function ensureSettings(db:Database){await db.prepare("CREATE TABLE IF NOT
 export async function readInventory(): Promise<Inventory> { const base=await defaults();const db=await cloudflareDb();if(db){await ensureSettings(db);const row=await db.prepare("SELECT value FROM settings WHERE key='inventory'").first<{value:string}>();if(!row)return base;try{return {...base,...JSON.parse(row.value)}}catch{return base}}try{return {...base,...JSON.parse(await fs.readFile(inventoryPath,"utf8"))}}catch{return base} }
 export async function writeInventory(value:Inventory){const db=await cloudflareDb();if(db){await ensureSettings(db);await db.prepare("INSERT INTO settings (key,value,updated_at) VALUES ('inventory',?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value,updated_at=excluded.updated_at").bind(JSON.stringify(value),new Date().toISOString()).run();return}await fs.mkdir(path.dirname(inventoryPath),{recursive:true});await fs.writeFile(inventoryPath,JSON.stringify(value,null,2))}
 const secret=()=>process.env.OWNER_SESSION_SECRET||ownerPasswordHash;
-export function makeSession(){return createHmac("sha256",secret()).update("foreverrepent-owner").digest("hex")}
-export function authorized(token?:string){const expected=Buffer.from(makeSession());const actual=Buffer.from(token||"");return expected.length===actual.length&&timingSafeEqual(expected,actual)}
+export function makeSession(){const issued=Math.floor(Date.now()/1000).toString(36);const signature=createHmac("sha256",secret()).update(`foreverrepent-owner:${issued}`).digest("hex");return`${issued}.${signature}`}
+export function authorized(token?:string){const [issued,signature]=String(token||"").split(".");const timestamp=parseInt(issued,36);if(!issued||!signature||!Number.isFinite(timestamp)||Date.now()/1000-timestamp>60*60*2)return false;const expected=Buffer.from(createHmac("sha256",secret()).update(`foreverrepent-owner:${issued}`).digest("hex"));const actual=Buffer.from(signature);return expected.length===actual.length&&timingSafeEqual(expected,actual)}
 function safeEqual(left: string, right: string) {
   const expected = Buffer.from(left);
   const supplied = Buffer.from(right);
