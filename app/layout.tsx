@@ -8,6 +8,7 @@ import "./owner-editor.css";
 import "./mobile-login.css";
 import "./features.css";
 import "./dashboard.css";
+import "./two-factor.css";
 // Reviews, promotions, receipts, analytics, and owner-security release.
 import { CartProvider } from "./cart";
 
