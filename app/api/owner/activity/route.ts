@@ -1,0 +1,2 @@
+import {NextRequest,NextResponse} from "next/server";import {authorized} from "@/lib/inventory";import {listActivity} from "@/lib/activity";
+export async function GET(request:NextRequest){if(!authorized(request.cookies.get("fr_owner")?.value))return NextResponse.json({error:"Unauthorized"},{status:401});return NextResponse.json({activity:await listActivity()},{headers:{"Cache-Control":"no-store"}})}
