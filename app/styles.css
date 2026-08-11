@@ -559,6 +559,26 @@ footer small {
   color: #b6a195;
   max-width: 410px;
 }
+.detail-copy .warranty-note {
+  margin: 18px 0 4px;
+  padding: 13px 14px;
+  border: 1px solid #d8976c42;
+  border-radius: 4px;
+  background: #d58e600d;
+  font: 10px DM Mono;
+  line-height: 1.55;
+  color: #d7b9a5;
+}
+.warranty-note b,
+.warranty-note span {
+  display: block;
+}
+.warranty-note b {
+  margin-bottom: 4px;
+  color: #e5a477;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
 .option-list {
   margin-top: 31px;
   border-top: 1px solid var(--line);
@@ -680,6 +700,7 @@ footer small {
   }
   .symbol-core span {
     font-size: 63px;
+    transform: translateX(7px);
   }
   .hero-symbol > p {
     font-size: 7px;
