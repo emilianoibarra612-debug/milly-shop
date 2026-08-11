@@ -39,3 +39,6 @@ export function validLogin(username: string, password: string) {
     return false;
   }
 }
+export const twoFactorEnabled=()=>Boolean(process.env.OWNER_TOTP_SECRET);
+function decodeBase32(value:string){const alphabet="ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";let bits="";for(const char of value.toUpperCase().replace(/[^A-Z2-7]/g,"")){const index=alphabet.indexOf(char);if(index<0)continue;bits+=index.toString(2).padStart(5,"0")}const bytes=[];for(let i=0;i+8<=bits.length;i+=8)bytes.push(parseInt(bits.slice(i,i+8),2));return Buffer.from(bytes)}
+export function validTotp(code:string){const secret=process.env.OWNER_TOTP_SECRET;if(!secret)return true;if(!/^\d{6}$/.test(code))return false;const key=decodeBase32(secret);const now=Math.floor(Date.now()/30000);for(let offset=-1;offset<=1;offset++){const counter=Buffer.alloc(8);counter.writeBigUInt64BE(BigInt(now+offset));const digest=createHmac("sha1",key).update(counter).digest();const start=digest[digest.length-1]&15;const value=((digest.readUInt32BE(start)&0x7fffffff)%1000000).toString().padStart(6,"0");if(safeEqual(value,code))return true}return false}
