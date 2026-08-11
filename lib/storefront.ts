@@ -3,7 +3,7 @@ import path from "path";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { Product } from "@/app/catalog";
 
-export type ProductEdit = { name: string; description: string };
+export type ProductEdit = { name: string; description: string; imageUrl?: string };
 export type StorefrontData = { prices: Record<string, number>; productEdits: Record<string, ProductEdit>; customProducts: (Product & { category: string })[] };
 type Statement = { bind: (...values: unknown[]) => Statement; run: () => Promise<unknown>; first: <T = Record<string, unknown>>() => Promise<T | null> };
 type Database = { prepare: (sql: string) => Statement };
