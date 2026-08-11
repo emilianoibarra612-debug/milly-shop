@@ -6,6 +6,7 @@ import TwoFactorManager from "./two-factor";
 type Item={name:string;option:string;unitPrice:number;quantity:number};type Message={id:number;sender:"customer"|"owner";body:string;createdAt:string};type Order={id:string;email:string;discordUsername:string;items:Item[];subtotal:number;status:string;createdAt:string;vouchedAt?:string;warrantyClaimedAt?:string;messages:Message[]};
 const money=(value:number)=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format(value);
 export default function OwnerOrders(){
+ // Owner security controls render above promotions for quick access on mobile.
  const [orders,setOrders]=useState<Order[]>([]);const [open,setOpen]=useState<string>();const [drafts,setDrafts]=useState<Record<string,string>>({});const [error,setError]=useState("");const [query,setQuery]=useState("");const [statusFilter,setStatusFilter]=useState("all");
  const load=useCallback(async()=>{const response=await fetch("/api/owner/orders",{cache:"no-store"});if(response.ok)setOrders((await response.json()).orders)},[]);
  useEffect(()=>{load();const timer=setInterval(load,5000);return()=>clearInterval(timer)},[load]);
