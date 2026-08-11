@@ -2,6 +2,7 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { createHash, randomBytes } from "crypto";
 import { categories } from "@/app/catalog";
 import { readStorefront } from "@/lib/storefront";
+import { readInventory } from "@/lib/inventory";
 
 type Statement={bind:(...values:unknown[])=>Statement;run:()=>Promise<unknown>;first:<T=Record<string,unknown>>()=>Promise<T|null>;all:<T=Record<string,unknown>>()=>Promise<{results:T[]}>};
 type Database={prepare:(sql:string)=>Statement;batch:(statements:Statement[])=>Promise<unknown>};
@@ -18,7 +19,7 @@ async function ensureSchema(db:Database){await db.batch([
  db.prepare("CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY AUTOINCREMENT, order_id TEXT NOT NULL, sender TEXT NOT NULL CHECK(sender IN ('customer','owner')), body TEXT NOT NULL, created_at TEXT NOT NULL, FOREIGN KEY(order_id) REFERENCES orders(id) ON DELETE CASCADE)"),
  db.prepare("CREATE INDEX IF NOT EXISTS idx_messages_order ON messages(order_id,id)"),
  db.prepare("CREATE INDEX IF NOT EXISTS idx_orders_created ON orders(created_at DESC)")
-]);const {results:columns}=await db.prepare("PRAGMA table_info(orders)").all<{name:string}>();if(!columns.some(column=>column.name==="discord_username"))await db.prepare("ALTER TABLE orders ADD COLUMN discord_username TEXT NOT NULL DEFAULT ''").run()}
+]);const {results:columns}=await db.prepare("PRAGMA table_info(orders)").all<{name:string}>();if(!columns.some(column=>column.name==="discord_username"))await db.prepare("ALTER TABLE orders ADD COLUMN discord_username TEXT NOT NULL DEFAULT ''").run();if(!columns.some(column=>column.name==="stock_deducted"))await db.prepare("ALTER TABLE orders ADD COLUMN stock_deducted INTEGER NOT NULL DEFAULT 0").run()}
 
 export async function priceItems(input: unknown): Promise<OrderItem[]> {
   if (!Array.isArray(input) || input.length < 1 || input.length > 30) {
@@ -88,5 +89,14 @@ export async function allOrders() {
     })),
   );
 }
-export async function setOrderStatus(id:string,status:string){if(!["pending","paid","completed","cancelled","closed"].includes(status))throw new Error("Invalid order status.");const db=await getDb();await db.prepare("UPDATE orders SET status=?,updated_at=? WHERE id=?").bind(status,new Date().toISOString(),id).run()}
+export async function setOrderStatus(id:string,status:string){
+ if(!["pending","paid","completed","cancelled","closed"].includes(status))throw new Error("Invalid order status.");
+ const db=await getDb();const row=await db.prepare("SELECT items_json,stock_deducted FROM orders WHERE id=?").bind(id).first<{items_json:string;stock_deducted:number}>();if(!row)throw new Error("Order not found.");const now=new Date().toISOString();
+ if(status==="completed"&&!Number(row.stock_deducted)){
+  const inventory=await readInventory();const items=JSON.parse(row.items_json) as OrderItem[];
+  for(const item of items)if(item.id in inventory)inventory[item.id]=Math.max(0,inventory[item.id]-item.quantity);
+  await db.batch([db.prepare("INSERT INTO settings (key,value,updated_at) VALUES ('inventory',?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value,updated_at=excluded.updated_at").bind(JSON.stringify(inventory),now),db.prepare("UPDATE orders SET status='completed',stock_deducted=1,updated_at=? WHERE id=? AND stock_deducted=0").bind(now,id)]);return;
+ }
+ await db.prepare("UPDATE orders SET status=?,updated_at=? WHERE id=?").bind(status,now,id).run()
+}
 export async function deleteOrder(id:string){const db=await getDb();await db.batch([db.prepare("DELETE FROM messages WHERE order_id=?").bind(id),db.prepare("DELETE FROM orders WHERE id=?").bind(id)])}
