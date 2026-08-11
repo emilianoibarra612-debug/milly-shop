@@ -1,4 +1,5 @@
 "use client";
+// Storefront release: trust, discovery, and warranty experience.
 import Link from "next/link";
 import { categories } from "./catalog";
 import { CartButton } from "./cart";
