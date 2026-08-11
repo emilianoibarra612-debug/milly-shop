@@ -8,7 +8,7 @@ import "./owner-editor.css";
 import "./mobile-login.css";
 import "./features.css";
 import "./dashboard.css";
-// Reviews, promotions, and owner-security release.
+// Reviews, promotions, receipts, analytics, and owner-security release.
 import { CartProvider } from "./cart";
 
 export const metadata: Metadata = { title: "FOREVERREPENT.STORE", description: "Premium digital essentials." };
