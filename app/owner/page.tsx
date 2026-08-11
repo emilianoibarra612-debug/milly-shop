@@ -3,7 +3,7 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { categories, Product } from "../catalog";
 import OwnerOrders from "./orders";
-type Inventory=Record<string,number>;type ProductEdit={name:string;description:string};type Store={prices:Record<string,number>;productEdits:Record<string,ProductEdit>;customProducts:(Product&{category:string})[]};
+type Inventory=Record<string,number>;type ProductEdit={name:string;description:string;imageUrl?:string};type Store={prices:Record<string,number>;productEdits:Record<string,ProductEdit>;customProducts:(Product&{category:string})[]};
 const key=(category:string,product:string)=>`${category}/${product}`;const priceKey=(category:string,product:string,option:number)=>`${category}/${product}/${option}`;
 export default function OwnerPanel(){const [username,setUsername]=useState("");const [password,setPassword]=useState("");const [message,setMessage]=useState("");const [loggedIn,setLoggedIn]=useState(false);const [inventory,setInventory]=useState<Inventory>({});const [store,setStore]=useState<Store>({prices:{},productEdits:{},customProducts:[]});const [amounts,setAmounts]=useState<Record<string,string>>({});const [edits,setEdits]=useState<Record<string,string>>({});const [productEdits,setProductEdits]=useState<Record<string,ProductEdit>>({});const [newProduct,setNewProduct]=useState({category:"discord-boost",name:"",description:"",price:""});
  const load=async()=>{const [inventoryResult,storeResult]=await Promise.all([fetch("/api/inventory",{cache:"no-store"}),fetch("/api/storefront",{cache:"no-store"})]);setInventory(await inventoryResult.json());setStore(await storeResult.json())};useEffect(()=>{load()},[]);
