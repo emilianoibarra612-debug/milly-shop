@@ -3,11 +3,12 @@ import path from "path";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { Product } from "@/app/catalog";
 
-export type StorefrontData = { prices: Record<string, number>; customProducts: (Product & { category: string })[] };
+export type ProductEdit = { name: string; description: string };
+export type StorefrontData = { prices: Record<string, number>; productEdits: Record<string, ProductEdit>; customProducts: (Product & { category: string })[] };
 type Statement = { bind: (...values: unknown[]) => Statement; run: () => Promise<unknown>; first: <T = Record<string, unknown>>() => Promise<T | null> };
 type Database = { prepare: (sql: string) => Statement };
 const storePath = path.join(process.cwd(), "data", "storefront.json");
-const empty = (): StorefrontData => ({ prices: {}, customProducts: [] });
+const empty = (): StorefrontData => ({ prices: {}, productEdits: {}, customProducts: [] });
 export const priceKey = (category: string, product: string, option: number) => `${category}/${product}/${option}`;
 
 async function cloudflareDb(): Promise<Database | null> {
