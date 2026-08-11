@@ -700,7 +700,7 @@ footer small {
   }
   .symbol-core span {
     font-size: 63px;
-    transform: translateX(7px);
+    transform: translateX(-13px);
   }
   .hero-symbol > p {
     font-size: 7px;
