@@ -11,7 +11,7 @@ import "./dashboard.css";
 import "./two-factor.css";
 import "./activity-images.css";
 import "./product-images-page.css";
-// Reviews, analytics, owner security, product tools, and private notification diagnostics.
+// Reviews, analytics, owner security, and product management tools.
 import { CartProvider } from "./cart";
 
 export const metadata: Metadata = { title: "FOREVERREPENT.STORE", description: "Premium digital essentials." };
