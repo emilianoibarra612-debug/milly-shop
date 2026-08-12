@@ -1,22 +1,8 @@
 import type { Order } from "@/lib/orders";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 
-const webhookPattern=/^https:\/\/(?:canary\.|ptb\.)?discord(?:app)?\.com\/api\/webhooks\/\d+\/[A-Za-z0-9._-]+$/;
-
-export async function sendOrderAlert(order:Order){
- let webhook=process.env.DISCORD_WEBHOOK_URL?.trim()||"";
- try{const {env}=await getCloudflareContext({async:true});webhook=String((env as unknown as {DISCORD_WEBHOOK_URL?:string}).DISCORD_WEBHOOK_URL||webhook).trim()}catch{}
- if(!webhook||!webhookPattern.test(webhook))return false;
- const products=order.items.map(item=>`• ${item.name} — ${item.option} ×${item.quantity}`).join("\n").slice(0,1024);
- const response=await fetch(webhook,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({
-  username:"ForeverRepent Orders",
-  allowed_mentions:{parse:[]},
-  embeds:[{title:"🛒 New website order",color:0xd99a6d,fields:[
-   {name:"Order ID",value:`\`${order.id}\``,inline:true},
-   {name:"Total",value:`$${order.subtotal.toFixed(2)}`,inline:true},
-   {name:"Status",value:"Pending payment",inline:true},
-   {name:"Products",value:products||"Digital product"}
-  ],footer:{text:"Open the ForeverRepent owner panel for customer details."},timestamp:order.createdAt}]
- })});
- return response.ok;
-}
+type DiscordResult={ok:boolean;error?:string};
+async function webhookUrl(){let value=process.env.DISCORD_WEBHOOK_URL||"";try{const {env}=await getCloudflareContext({async:true});value=String((env as unknown as {DISCORD_WEBHOOK_URL?:string}).DISCORD_WEBHOOK_URL||value)}catch{}return value.trim().replace(/^['"]|['"]$/g,"")}
+async function postDiscord(payload:unknown):Promise<DiscordResult>{const webhook=await webhookUrl();if(!webhook)return{ok:false,error:"DISCORD_WEBHOOK_URL is missing in Cloudflare."};let parsed:URL;try{parsed=new URL(webhook)}catch{return{ok:false,error:"The Discord webhook URL saved in Cloudflare is invalid."}}if(parsed.protocol!=="https:"||!(["discord.com","discordapp.com","canary.discord.com","ptb.discord.com"].includes(parsed.hostname))||!parsed.pathname.startsWith("/api/webhooks/"))return{ok:false,error:"The saved URL is not a valid Discord webhook URL."};try{const response=await fetch(webhook,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});if(response.ok)return{ok:true};const detail=(await response.text()).slice(0,180);return{ok:false,error:`Discord rejected the webhook (${response.status})${detail?`: ${detail}`:"."}`}}catch(error){return{ok:false,error:error instanceof Error?`Could not reach Discord: ${error.message}`:"Could not reach Discord."}}}
+export async function testDiscordAlert(){return postDiscord({username:"ForeverRepent Orders",allowed_mentions:{parse:[]},embeds:[{title:"✅ Discord alerts connected",description:"Your website can now send new order notifications to this private channel.",color:0x74d89d,timestamp:new Date().toISOString()}]})}
+export async function sendOrderAlert(order:Order){const products=order.items.map(item=>`• ${item.name} — ${item.option} ×${item.quantity}`).join("\n").slice(0,1024);return(await postDiscord({username:"ForeverRepent Orders",allowed_mentions:{parse:[]},embeds:[{title:"🛒 New website order",color:0xd99a6d,fields:[{name:"Order ID",value:`\`${order.id}\``,inline:true},{name:"Total",value:`$${order.subtotal.toFixed(2)}`,inline:true},{name:"Status",value:"Pending payment",inline:true},{name:"Products",value:products||"Digital product"}],footer:{text:"Open the ForeverRepent owner panel for customer details."},timestamp:order.createdAt}]})).ok}
