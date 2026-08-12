@@ -1,9 +1,11 @@
 import type { Order } from "@/lib/orders";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 
 const webhookPattern=/^https:\/\/(?:canary\.|ptb\.)?discord(?:app)?\.com\/api\/webhooks\/\d+\/[A-Za-z0-9._-]+$/;
 
 export async function sendOrderAlert(order:Order){
- const webhook=process.env.DISCORD_WEBHOOK_URL?.trim();
+ let webhook=process.env.DISCORD_WEBHOOK_URL?.trim()||"";
+ try{const {env}=await getCloudflareContext({async:true});webhook=String((env as unknown as {DISCORD_WEBHOOK_URL?:string}).DISCORD_WEBHOOK_URL||webhook).trim()}catch{}
  if(!webhook||!webhookPattern.test(webhook))return false;
  const products=order.items.map(item=>`• ${item.name} — ${item.option} ×${item.quantity}`).join("\n").slice(0,1024);
  const response=await fetch(webhook,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({
