@@ -11,7 +11,7 @@ import "./dashboard.css";
 import "./two-factor.css";
 import "./activity-images.css";
 import "./product-images-page.css";
-// Reviews, promotions, analytics, owner activity, product images, 2FA, and Discord order alerts.
+// Reviews, analytics, owner security, product tools, and private order-alert diagnostics.
 import { CartProvider } from "./cart";
 
 export const metadata: Metadata = { title: "FOREVERREPENT.STORE", description: "Premium digital essentials." };
